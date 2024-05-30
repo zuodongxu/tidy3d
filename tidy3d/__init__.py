@@ -1,4 +1,4 @@
-""" Tidy3d package imports"""
+"""Tidy3d package imports"""
 
 # grid
 from .components.grid.grid import Grid, Coords
@@ -6,7 +6,7 @@ from .components.grid.grid_spec import GridSpec, UniformGrid, CustomGrid, AutoGr
 
 # subpixel
 from .components.subpixel_spec import SubpixelSpec, Staircasing
-from .components.subpixel_spec import VolumetricAveraging, PolarizedAveraging
+from .components.subpixel_spec import VolumetricAveraging, PolarizedAveraging, ContourPathAveraging
 from .components.subpixel_spec import HeuristicPECStaircasing, PECConformal
 
 # geometry
@@ -359,6 +359,7 @@ __all__ = [
     "Staircasing",
     "VolumetricAveraging",
     "PolarizedAveraging",
+    "ContourPathAveraging",
     "HeuristicPECStaircasing",
     "PECConformal",
     "EMESimulation",

@@ -47,7 +47,20 @@ class PolarizedAveraging(AbstractSubpixelAveragingMethod):
     """
 
 
-DielectricSubpixelType = Union[Staircasing, PolarizedAveraging]
+class ContourPathAveraging(AbstractSubpixelAveragingMethod):
+    """Apply a contour-path subpixel averaging method to dielectric boundaries.
+
+    Note
+    ----
+    The algorithm is based on:
+
+        A. Mohammadi, H. Nadgaran and M. Agio, "Contour-path effective
+        permittivities for the two-dimensional finite-difference
+        time-domain method", Optics express, 13(25), 10367-10381 (2005).
+    """
+
+
+DielectricSubpixelType = Union[Staircasing, PolarizedAveraging, ContourPathAveraging]
 
 
 class VolumetricAveraging(AbstractSubpixelAveragingMethod):
