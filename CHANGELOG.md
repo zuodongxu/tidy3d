@@ -11,12 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Advanced option `dist_type` that allows `LinearLumpedElement` to be distributed across grid cells in different ways. For example, restricting the network portion to a single cell and using PEC wires to connect to the desired location of the terminals. 
 - New `layer_refinement_specs` field in `GridSpec` that takes a list of `LayerRefinementSpec` for automatic mesh refinement and snapping in layered structures. Structure corners on the cross section perpendicular to layer thickness direction can be automatically identified. Mesh is automatically snapped and refined around those corners.
 - New field `drop_outside_sim` in `MeshOverrideStructure` to specify whether to drop an override structure if it is outside the simulation domain, but it overlaps with the simulation domain when projected to an axis.
+- Ability to directly create `DirectivityData` from an `xarrray.Dataset` containing electromagnetic fields, where the flux is calculated by integrating the fields over the surface of a sphere.
+- Ability to the `TerminalComponentModeler` that enables the computation of antenna parameters and figures of merit, such as gain, radiation efficiency, and reflection efficiency. When there are multiple ports in the `TerminalComponentModeler`, these antenna parameters may be calculated with user-specified port excitation magnitudes and phases.
 
 ### Changed
 - The coordinate of snapping points in `GridSpec` can take value `None`, so that mesh can be selectively snapped only along certain dimensions.
 - Grid snapping for `MeshOverrideStructure` with `shadow=False` is only on if the structure refines the mesh.
 - Renamed `SkinDepthFitterParam` --> `SurfaceImpedanceFitterParam` used in `LossyMetalMedium`. `plot` in `LossyMetalMedium` now plots complex-valued surface impedance.
 - Changed plot_3d iframe url to tidy3d production environment.
+- Definition of left- and right-handed circular polarization in `DirectivityData` to follow engineering convention.
+- Extended the number of quantities provided by the `DirectivityData`, which now includes more parameters of interest like radiation intensity and gain. In addition, antenna parameters can be decomposed into contributions from individual polarization components according to a specified polarization basis, either `linear` or `circular`.
 
 ### Fixed
 - Make gauge selection for non-converged modes more robust.
