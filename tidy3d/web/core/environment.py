@@ -1,7 +1,7 @@
 """Environment Setup."""
 
 import os
-import ssl
+# import ssl
 
 from pydantic.v1 import BaseSettings, Field
 
@@ -20,7 +20,7 @@ class EnvironmentConfig(BaseSettings):
     s3_region: str
     ssl_verify: bool = Field(True, env="TIDY3D_SSL_VERIFY")
     enable_caching: bool = None
-    ssl_version: ssl.TLSVersion = None
+    ssl_version: int = None
 
     def active(self) -> None:
         """Activate the environment instance."""
@@ -181,7 +181,7 @@ class Environment:
         """
         self._current.enable_caching = enable_caching
 
-    def set_ssl_version(self, ssl_version: ssl.TLSVersion) -> None:
+    def set_ssl_version(self, ssl_version: int = 0) -> None:
         """Set the ssl version.
 
         Parameters

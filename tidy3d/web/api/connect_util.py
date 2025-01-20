@@ -3,10 +3,10 @@
 import time
 from functools import wraps
 
-from requests import ReadTimeout
-from requests.exceptions import ConnectionError as ConnErr
-from requests.exceptions import JSONDecodeError
-from urllib3.exceptions import NewConnectionError
+# from requests import ReadTimeout
+# from requests.exceptions import ConnectionError as ConnErr
+# from requests.exceptions import JSONDecodeError
+# from urllib3.exceptions import NewConnectionError
 
 from ...exceptions import WebError
 from ...log import log
@@ -19,37 +19,14 @@ REFRESH_TIME = 0.3
 
 def wait_for_connection(decorated_fn=None, wait_time_sec: float = CONNECTION_RETRY_TIME):
     """Causes function to ignore connection errors and retry for ``wait_time_sec`` secs."""
-
-    def decorator(web_fn):
-        """Decorator returned by @wait_for_connection()"""
-
-        @wraps(web_fn)
-        def web_fn_wrapped(*args, **kwargs):
-            """Function to return including connection waiting."""
-            time_start = time.time()
-            warned_previously = False
-
-            while (time.time() - time_start) < wait_time_sec:
-                try:
-                    return web_fn(*args, **kwargs)
-                except (ConnErr, ConnectionError, NewConnectionError, ReadTimeout, JSONDecodeError):
-                    if not warned_previously:
-                        log.warning(f"No connection: Retrying for {wait_time_sec} seconds.")
-                        warned_previously = True
-                    time.sleep(REFRESH_TIME)
-
-            raise WebError("No internet connection: giving up on connection waiting.")
-
-        return web_fn_wrapped
-
-    if decorated_fn:
-        return decorator(decorated_fn)
-
-    return decorator
+    return decorated_fn
 
 
 def get_time_steps_str(time_steps) -> str:
     """get_time_steps_str"""
+
+    raise NotImplementedError("This function is not implemented yet.")
+
     if time_steps < 1000:
         time_steps_str = f"{time_steps}"
     elif 1000 <= time_steps < 1000 * 1000:
@@ -61,6 +38,9 @@ def get_time_steps_str(time_steps) -> str:
 
 def get_grid_points_str(grid_points) -> str:
     """get_grid_points_str"""
+
+    raise NotImplementedError("This function is not implemented yet.")
+
     if grid_points < 1000:
         grid_points_str = f"{grid_points}"
     elif 1000 <= grid_points < 1000 * 1000:

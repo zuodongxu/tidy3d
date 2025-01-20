@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Callable, List, Optional, Tuple
 
 import pydantic.v1 as pd
-from botocore.exceptions import ClientError
+# from botocore.exceptions import ClientError
 from pydantic.v1 import Extra, Field, parse_obj_as
 
 from . import http_util
@@ -492,7 +492,7 @@ class SimulationTask(ResourceLifecycle, Submittable, extra=Extra.allow):
                 verbose=verbose,
                 progress_callback=progress_callback,
             )
-        except ClientError:
+        except Exception:
             if verbose:
                 console = get_logger_console()
                 console.log(f"Unable to download '{remote_data_file}'.")

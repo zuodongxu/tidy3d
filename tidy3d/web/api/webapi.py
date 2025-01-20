@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from typing import Callable, Dict, List
 
 import pytz
-from requests import HTTPError
+# from requests import HTTPError
 from rich.progress import Progress
 
 from ...components.medium import AbstractCustomMedium
@@ -792,7 +792,8 @@ def load(
         Object containing simulation data.
     """
     if not os.path.exists(path) or replace_existing:
-        download(task_id=task_id, path=path, verbose=verbose, progress_callback=progress_callback)
+        # download(task_id=task_id, path=path, verbose=verbose, progress_callback=progress_callback)
+        raise Exception(f"File {path} does not exist.")
 
     if verbose:
         console = get_logging_console()
@@ -1097,6 +1098,9 @@ def test() -> None:
     """
     Confirm whether Tidy3D authentication is configured. Raises exception if not.
     """
+
+    raise NotImplementedError("This function is not yet implemented.")
+
     try:
         # note, this is a little slow, but the only call that doesn't require providing a task id.
         get_tasks(num_tasks=0)

@@ -406,7 +406,7 @@ class BatchData(Tidy3dBaseModel, Mapping):
         """Load a simulation data object from file by task name."""
         task_data_path = self.task_paths[task_name]
         task_id = self.task_ids[task_name]
-        web.get_info(task_id)
+        # web.get_info(task_id)
 
         return web.load(
             task_id=task_id,
@@ -937,9 +937,9 @@ class Batch(WebContainer):
         task_paths = {}
         task_ids = {}
         for task_name, job in self.jobs.items():
-            if "error" in job.status:
-                log.warning(f"Not loading '{task_name}' as the task errored.")
-                continue
+            # if "error" in job.status:
+            #     log.warning(f"Not loading '{task_name}' as the task errored.")
+            #     continue
 
             task_paths[task_name] = self._job_data_path(task_id=job.task_id, path_dir=path_dir)
             task_ids[task_name] = self.jobs[task_name].task_id
