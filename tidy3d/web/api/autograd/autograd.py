@@ -20,7 +20,7 @@ from ..asynchronous import DEFAULT_DATA_DIR
 from ..asynchronous import run_async as run_async_webapi
 from ..container import DEFAULT_DATA_PATH, Batch, BatchData, Job
 from ..tidy3d_stub import SimulationDataType, SimulationType
-from ..webapi import run as run_webapi
+# from ..webapi import run as run_webapi
 from .utils import E_to_D, FieldMap, TracerKeys, get_derivative_maps
 
 # keys for data into auxiliary dictionary
@@ -172,6 +172,8 @@ def run(
     :meth:`tidy3d.web.api.container.Batch.monitor`
         Monitor progress of each of the running tasks.
     """
+
+    raise NotImplementedError("This function is not implemented yet.")
 
     if is_valid_for_autograd(simulation):
         return _run(
