@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Grid snapping for `MeshOverrideStructure` with `shadow=False` is only on if the structure refines the mesh.
 - Renamed `SkinDepthFitterParam` --> `SurfaceImpedanceFitterParam` used in `LossyMetalMedium`. `plot` in `LossyMetalMedium` now plots complex-valued surface impedance.
 - Changed plot_3d iframe url to tidy3d production environment.
+- Nonlinear models `KerrNonlinearity` and `TwoPhotonAbsorption` now default to using the physical real fields instead of complex fields.
 
 ### Fixed
 - Make gauge selection for non-converged modes more robust.
