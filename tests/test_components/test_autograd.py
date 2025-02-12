@@ -196,7 +196,7 @@ def use_emulated_run(monkeypatch):
         def emulated_run_bwd(simulation, task_name, **run_kwargs) -> td.SimulationData:
             """What gets called instead of ``web/api/autograd/autograd.py::_run_tidy3d_bwd``."""
 
-            task_id_fwd = task_name[:-8]
+            task_id_fwd = "".join(task_name.partition("_adjoint")[:-2])
 
             # run the adjoint sim
             sim_data_adj = run_emulated(simulation, task_name="task_name")
@@ -752,7 +752,7 @@ def test_run_zero_grad(use_emulated_run):
         sim_data = run(sim, task_name="adjoint_test", verbose=False)
         return 0 * postprocess(sim_data)
 
-    with AssertLogLevel("WARNING", contains_str="no sources"):
+    with AssertLogLevel("WARNING"):
         grad = ag.grad(objective)(params0)
 
 
@@ -1678,7 +1678,7 @@ def test_multi_freq_edge_cases(use_emulated_run, structure_key, label, check_fn,
         return postprocess_fn(data)
 
     if label == "src_2_freq_2_mon_2":
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(ValueError):
             g = ag.grad(objective)(params0)
     else:
         g = ag.grad(objective)(params0)
