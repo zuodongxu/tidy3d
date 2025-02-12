@@ -1037,18 +1037,18 @@ class SimulationData(AbstractYeeGridSimulationData):
         self,
         data_vjp_paths: set[tuple],
         adjoint_monitors: list[Monitor],
-    ) -> list[Simulation] | None:
+    ) -> list[Simulation]:
         """Make the adjoint simulations from the original simulation and the VJP-containing data."""
 
         if not data_vjp_paths:
-            return None
+            return []
 
         sim_original = self.simulation
 
         # generate the adjoint sources {mnt_name : list[Source]}
         sources_adj_dict = self.make_adjoint_sources(data_vjp_paths=data_vjp_paths)
         if not sources_adj_dict:
-            return None
+            return []
 
         adj_srcs = []
         for src_list in sources_adj_dict.values():
@@ -1057,10 +1057,16 @@ class SimulationData(AbstractYeeGridSimulationData):
         adjoint_source_infos = self.process_adjoint_sources(adj_srcs=adj_srcs)
 
         if not adjoint_source_infos:
-            return None
+            return []
 
         # grab boundary conditions with flipped Bloch vectors (for adjoint)
         bc_adj = sim_original.boundary_spec.flipped_bloch_vecs
+
+        # set the ADJ grid spec wavelength to the original wavelength (for same meshing)
+        grid_spec_original = sim_original.grid_spec
+        if sim_original.sources and grid_spec_original.wavelength is None:
+            wavelength_original = grid_spec_original.wavelength_from_sources(sim_original.sources)
+            grid_spec_adj = grid_spec_original.updated_copy(wavelength=wavelength_original)
 
         adj_sims = []
         for adjoint_source_info in adjoint_source_infos:
@@ -1080,13 +1086,7 @@ class SimulationData(AbstractYeeGridSimulationData):
             if not adjoint_source_info.normalize_sim:
                 sim_adj_update_dict["normalize_index"] = None
 
-            # set the ADJ grid spec wavelength to the original wavelength (for same meshing)
-            grid_spec_original = sim_original.grid_spec
             if sim_original.sources and grid_spec_original.wavelength is None:
-                wavelength_original = grid_spec_original.wavelength_from_sources(
-                    sim_original.sources
-                )
-                grid_spec_adj = grid_spec_original.updated_copy(wavelength=wavelength_original)
                 sim_adj_update_dict["grid_spec"] = grid_spec_adj
 
             adj_sims.append(sim_original.updated_copy(**sim_adj_update_dict))

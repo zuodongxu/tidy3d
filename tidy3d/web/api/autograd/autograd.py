@@ -130,7 +130,7 @@ def run(
     local_gradient: bool = False
         Whether to perform gradient calculation locally, requiring more downloads but potentially
         more stable with experimental features.
-    max_num_adjoint_sims: int = MAX_NUM_ADJOINT_SIMS
+    max_num_adjoint_sims: int = 10
         Maximum number of adjoint simulations allowed to run automatically.
     reduce_simulation: Literal["auto", True, False] = "auto"
         Whether to reduce structures in the simulation to the simulation domain only. Note: currently only implemented for the mode solver.
@@ -251,7 +251,7 @@ def run_async(
     local_gradient: bool = False
         Whether to perform gradient calculations locally, requiring more downloads but potentially
         more stable with experimental features.
-    max_num_adjoint_sims: int = MAX_NUM_ADJOINT_SIMS
+    max_num_adjoint_sims: int = 10
         Maximum number of adjoint simulations allowed to run automatically.
     reduce_simulation: Literal["auto", True, False] = "auto"
         Whether to reduce structures in the simulation to the simulation domain only. Note: currently only implemented for the mode solver.
@@ -637,7 +637,7 @@ def _run_bwd(
             max_num_adjoint_sims=max_num_adjoint_sims,
         )
 
-        if sims_adj is None:
+        if not sims_adj:
             td.log.warning(
                 f"Adjoint simulation for task '{task_name}' contains no sources. "
                 "This can occur if the objective function does not depend on the "
@@ -664,8 +664,8 @@ def _run_bwd(
             td.log.info("Completed local batch adjoint simulations")
 
             # sum partial derivatives from each adjoint simulation
-            for k, sim_data_adj in batch_data_adj.items():
-                td.log.info(f"Processing VJP contribution from {k}")
+            for task_name_adj, sim_data_adj in batch_data_adj.items():
+                td.log.info(f"Processing VJP contribution from {task_name_adj}")
                 vjp_fields = postprocess_adj(
                     sim_data_adj=sim_data_adj,
                     sim_data_orig=sim_data_orig,
@@ -755,7 +755,7 @@ def _run_async_bwd(
                 max_num_adjoint_sims=max_num_adjoint_sims,
             )
 
-            if sims_adj is None:
+            if not sims_adj:
                 td.log.debug(f"Adjoint simulation for task '{task_name}' contains no sources.")
                 sim_fields_vjp_dict[task_name] = {
                     k: 0 * v for k, v in sim_fields_original_dict[task_name].items()
@@ -841,7 +841,7 @@ def setup_adj(
     sim_data_orig: td.SimulationData,
     sim_fields_keys: list[tuple],
     max_num_adjoint_sims: int,
-) -> typing.Optional[list[td.Simulation]]:
+) -> list[td.Simulation]:
     """Construct an adjoint simulation from a set of data_fields for the VJP."""
 
     td.log.info("Running custom vjp (adjoint) pipeline.")
@@ -865,7 +865,7 @@ def setup_adj(
         adjoint_monitors=adjoint_monitors,
     )
 
-    if _INSPECT_ADJOINT_FIELDS and sims_adj is not None:
+    if _INSPECT_ADJOINT_FIELDS and sims_adj:
         adj_fld_mnt = td.FieldMonitor(
             center=_INSPECT_ADJOINT_PLANE.center,
             size=_INSPECT_ADJOINT_PLANE.size,
@@ -888,7 +888,7 @@ def setup_adj(
         sim_data_new.plot_field("adjoint_fields", "Ez", "re", ax=ax3)
         plt.show()
 
-    if sims_adj is not None and len(sims_adj) > max_num_adjoint_sims:
+    if len(sims_adj) > max_num_adjoint_sims:
         msg = (
             f"Number of adjoint simulations ({len(sims_adj)}) exceeds the maximum allowed "
             f"({max_num_adjoint_sims}) per forward simulation. This typically means that "
