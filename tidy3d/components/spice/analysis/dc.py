@@ -65,3 +65,10 @@ class IsothermalSteadyChargeDCAnalysis(Tidy3dBaseModel):
         "at `convergence_dv` intervals until the required bias is reached. This is, therefore, a "
         "convergence parameter in DC computations.",
     )
+
+    fermi_dirac: bool = pd.Field(
+        False,
+        title="Fermi-Dirac statistics",
+        description="Determines whether Fermi-Dirac statistics are used. When False, "
+        "Boltzmann statistics will be used.",
+    )
