@@ -251,7 +251,6 @@ def use_emulated_run(monkeypatch):
 
         monkeypatch.setattr(webapi, "run", run_emulated)
         monkeypatch.setattr(tidy3d.web.api.autograd.autograd, "_run_tidy3d", emulated_run_fwd)
-        monkeypatch.setattr(tidy3d.web.api.autograd.autograd, "_run_tidy3d_bwd", emulated_run_bwd)
         monkeypatch.setattr(
             tidy3d.web.api.autograd.autograd, "_run_async_tidy3d", emulated_run_async_fwd
         )

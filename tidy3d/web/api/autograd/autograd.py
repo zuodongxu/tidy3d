@@ -39,6 +39,9 @@ MAX_NUM_ADJOINT_PER_FWD = 10
 # default value for whether to do local gradient calculation (True) or server side (False)
 LOCAL_GRADIENT = False
 
+# directory to store adjoint data for local gradient calculation relative to run path
+LOCAL_ADJOINT_DIR = "adjoint_data"
+
 # if True, will plot the adjoint fields on the plane provided. used for debugging only
 _INSPECT_ADJOINT_FIELDS = False
 _INSPECT_ADJOINT_PLANE = td.Box(center=(0, 0, 0), size=(td.inf, td.inf, 0))
@@ -657,10 +660,13 @@ def _run_bwd(
         if local_gradient:
             # Run all adjoint sims in batch
             td.log.info("Starting local batch adjoint simulations")
-            path = run_kwargs.pop("path")
-            path_dir = str(Path(path).parent.resolve())
+            path = Path(run_kwargs.pop("path"))
+            path_dir_adj = path.parent / LOCAL_ADJOINT_DIR
+            path_dir_adj.mkdir(exist_ok=True)
 
-            batch_data_adj, _ = _run_async_tidy3d(sims_adj_dict, path_dir=path_dir, **run_kwargs)
+            batch_data_adj, _ = _run_async_tidy3d(
+                sims_adj_dict, path_dir=str(path_dir_adj), **run_kwargs
+            )
             td.log.info("Completed local batch adjoint simulations")
 
             # sum partial derivatives from each adjoint simulation
@@ -776,7 +782,13 @@ def _run_async_bwd(
 
         if local_gradient:
             # Run all adjoint simulations in a single batch
-            batch_data_adj, _ = _run_async_tidy3d(all_sims_adj, **run_async_kwargs)
+            path_dir = Path(run_async_kwargs.pop("path_dir"))
+            path_dir_adj = path_dir / LOCAL_ADJOINT_DIR
+            path_dir_adj.mkdir(exist_ok=True)
+
+            batch_data_adj, _ = _run_async_tidy3d(
+                all_sims_adj, path_dir=str(path_dir_adj), **run_async_kwargs
+            )
 
             # Process results for each original task
             for adj_task_name, sim_data_adj in batch_data_adj.items():
@@ -1051,20 +1063,10 @@ def _run_tidy3d(
     return data, job.task_id
 
 
-def _run_tidy3d_bwd(simulation: td.Simulation, task_name: str, **run_kwargs) -> AutogradFieldMap:
-    """Run a simulation without any tracers using regular web.run()."""
-    job_init_kwargs = parse_run_kwargs(**run_kwargs)
-    job = Job(simulation=simulation, task_name=task_name, **job_init_kwargs)
-    td.log.info(f"running {job.simulation_type} simulation with '_run_tidy3d_bwd()'")
-    job.start()
-    job.monitor()
-    return get_vjp_traced_fields(task_id_adj=job.task_id, verbose=job.verbose)
-
-
 def _run_async_tidy3d(
     simulations: dict[str, td.Simulation], **run_kwargs
 ) -> tuple[BatchData, dict[str, str]]:
-    """Run a simulation without any tracers using regular web.run()."""
+    """Run a batch of simulations using regular web.run()."""
     batch_init_kwargs = parse_run_kwargs(**run_kwargs)
     path_dir = run_kwargs.pop("path_dir", None)
     batch = Batch(simulations=simulations, **batch_init_kwargs)
@@ -1098,12 +1100,12 @@ def _run_async_tidy3d_bwd(
     simulations: dict[str, td.Simulation],
     **run_kwargs,
 ) -> dict[str, AutogradFieldMap]:
-    """Run a simulation without any tracers using regular web.run()."""
+    """Run a batch of adjoint simulations using regular web.run()."""
 
     batch_init_kwargs = parse_run_kwargs(**run_kwargs)
-    _ = run_kwargs.pop("path_dir")
+    _ = run_kwargs.pop("path_dir", None)
     batch = Batch(simulations=simulations, **batch_init_kwargs)
-    td.log.info(f"running {batch.simulation_type} simulation with '_run_tidy3d_bwd()'")
+    td.log.info(f"running {batch.simulation_type} batch with '_run_async_tidy3d_bwd()'")
 
     batch.start()
     batch.monitor()
