@@ -34,7 +34,7 @@ SIM_VJP_FILE = "output/autograd_sim_vjp.hdf5"
 SIM_FIELDS_KEYS_FILE = "autograd_sim_fields_keys.hdf5"
 
 MAX_NUM_TRACED_STRUCTURES = 500
-MAX_NUM_ADJOINT_SIMS = 10
+MAX_NUM_ADJOINT_PER_FWD = 10
 
 # default value for whether to do local gradient calculation (True) or server side (False)
 LOCAL_GRADIENT = False
@@ -95,7 +95,7 @@ def run(
     simulation_type: str = "tidy3d",
     parent_tasks: list[str] = None,
     local_gradient: bool = LOCAL_GRADIENT,
-    max_num_adjoint_sims: int = MAX_NUM_ADJOINT_SIMS,
+    max_num_adjoint_per_fwd: int = MAX_NUM_ADJOINT_PER_FWD,
     reduce_simulation: Literal["auto", True, False] = "auto",
 ) -> SimulationDataType:
     """
@@ -130,7 +130,7 @@ def run(
     local_gradient: bool = False
         Whether to perform gradient calculation locally, requiring more downloads but potentially
         more stable with experimental features.
-    max_num_adjoint_sims: int = 10
+    max_num_adjoint_per_fwd: int = 10
         Maximum number of adjoint simulations allowed to run automatically.
     reduce_simulation: Literal["auto", True, False] = "auto"
         Whether to reduce structures in the simulation to the simulation domain only. Note: currently only implemented for the mode solver.
@@ -195,7 +195,7 @@ def run(
             simulation_type="tidy3d_autograd",
             parent_tasks=parent_tasks,
             local_gradient=local_gradient,
-            max_num_adjoint_sims=max_num_adjoint_sims,
+            max_num_adjoint_per_fwd=max_num_adjoint_per_fwd,
         )
 
     return run_webapi(
@@ -225,7 +225,7 @@ def run_async(
     simulation_type: str = "tidy3d",
     parent_tasks: dict[str, list[str]] = None,
     local_gradient: bool = LOCAL_GRADIENT,
-    max_num_adjoint_sims: int = MAX_NUM_ADJOINT_SIMS,
+    max_num_adjoint_per_fwd: int = MAX_NUM_ADJOINT_PER_FWD,
     reduce_simulation: Literal["auto", True, False] = "auto",
 ) -> BatchData:
     """Submits a set of Union[:class:`.Simulation`, :class:`.HeatSimulation`, :class:`.EMESimulation`] objects to server,
@@ -251,7 +251,7 @@ def run_async(
     local_gradient: bool = False
         Whether to perform gradient calculations locally, requiring more downloads but potentially
         more stable with experimental features.
-    max_num_adjoint_sims: int = 10
+    max_num_adjoint_per_fwd: int = 10
         Maximum number of adjoint simulations allowed to run automatically.
     reduce_simulation: Literal["auto", True, False] = "auto"
         Whether to reduce structures in the simulation to the simulation domain only. Note: currently only implemented for the mode solver.
@@ -283,7 +283,7 @@ def run_async(
             simulation_type="tidy3d_autograd_async",
             parent_tasks=parent_tasks,
             local_gradient=local_gradient,
-            max_num_adjoint_sims=max_num_adjoint_sims,
+            max_num_adjoint_per_fwd=max_num_adjoint_per_fwd,
         )
 
     return run_async_webapi(
@@ -306,7 +306,7 @@ def _run(
     simulation: td.Simulation,
     task_name: str,
     local_gradient: bool = LOCAL_GRADIENT,
-    max_num_adjoint_sims: int = MAX_NUM_ADJOINT_SIMS,
+    max_num_adjoint_per_fwd: int = MAX_NUM_ADJOINT_PER_FWD,
     **run_kwargs,
 ) -> td.SimulationData:
     """User-facing ``web.run`` function, compatible with ``autograd`` differentiation."""
@@ -334,7 +334,7 @@ def _run(
         task_name=task_name,
         aux_data=aux_data,
         local_gradient=local_gradient,
-        max_num_adjoint_sims=max_num_adjoint_sims,
+        max_num_adjoint_per_fwd=max_num_adjoint_per_fwd,
         **run_kwargs,
     )
 
@@ -344,7 +344,7 @@ def _run(
 def _run_async(
     simulations: dict[str, td.Simulation],
     local_gradient: bool = LOCAL_GRADIENT,
-    max_num_adjoint_sims: int = MAX_NUM_ADJOINT_SIMS,
+    max_num_adjoint_per_fwd: int = MAX_NUM_ADJOINT_PER_FWD,
     **run_async_kwargs,
 ) -> dict[str, td.SimulationData]:
     """User-facing ``web.run_async`` function, compatible with ``autograd`` differentiation."""
@@ -367,7 +367,7 @@ def _run_async(
         sims_original=sims_original,
         aux_data_dict=aux_data_dict,
         local_gradient=local_gradient,
-        max_num_adjoint_sims=max_num_adjoint_sims,
+        max_num_adjoint_per_fwd=max_num_adjoint_per_fwd,
         **run_async_kwargs,
     )
 
@@ -410,7 +410,7 @@ def _run_primitive(
     task_name: str,
     aux_data: dict,
     local_gradient: bool,
-    max_num_adjoint_sims: int,
+    max_num_adjoint_per_fwd: int,
     **run_kwargs,
 ) -> AutogradFieldMap:
     """Autograd-traced 'run()' function: runs simulation, strips tracer data, caches fwd data."""
@@ -461,7 +461,7 @@ def _run_async_primitive(
     sims_original: dict[str, td.Simulation],
     aux_data_dict: dict[dict[str, typing.Any]],
     local_gradient: bool,
-    max_num_adjoint_sims: int,
+    max_num_adjoint_per_fwd: int,
     **run_async_kwargs,
 ) -> dict[str, AutogradFieldMap]:
     task_names = sim_fields_dict.keys()
@@ -601,7 +601,7 @@ def _run_bwd(
     task_name: str,
     aux_data: dict,
     local_gradient: bool,
-    max_num_adjoint_sims: int,
+    max_num_adjoint_per_fwd: int,
     **run_kwargs,
 ) -> typing.Callable[[AutogradFieldMap], AutogradFieldMap]:
     """VJP-maker for ``_run_primitive()``. Constructs and runs adjoint simulations, computes grad."""
@@ -634,7 +634,7 @@ def _run_bwd(
             data_fields_vjp=data_fields_vjp,
             sim_data_orig=sim_data_orig,
             sim_fields_keys=sim_fields_keys,
-            max_num_adjoint_sims=max_num_adjoint_sims,
+            max_num_adjoint_per_fwd=max_num_adjoint_per_fwd,
         )
 
         if not sims_adj:
@@ -714,7 +714,7 @@ def _run_async_bwd(
     sims_original: dict[str, td.Simulation],
     aux_data_dict: dict[str, dict[str, typing.Any]],
     local_gradient: bool,
-    max_num_adjoint_sims: int,
+    max_num_adjoint_per_fwd: int,
     **run_async_kwargs,
 ) -> typing.Callable[[dict[str, AutogradFieldMap]], dict[str, AutogradFieldMap]]:
     """VJP-maker for ``_run_primitive()``. Constructs and runs adjoint simulation, computes grad."""
@@ -752,7 +752,7 @@ def _run_async_bwd(
                 data_fields_vjp=data_fields_vjp,
                 sim_data_orig=sim_data_orig,
                 sim_fields_keys=sim_fields_keys,
-                max_num_adjoint_sims=max_num_adjoint_sims,
+                max_num_adjoint_per_fwd=max_num_adjoint_per_fwd,
             )
 
             if not sims_adj:
@@ -840,7 +840,7 @@ def setup_adj(
     data_fields_vjp: AutogradFieldMap,
     sim_data_orig: td.SimulationData,
     sim_fields_keys: list[tuple],
-    max_num_adjoint_sims: int,
+    max_num_adjoint_per_fwd: int,
 ) -> list[td.Simulation]:
     """Construct an adjoint simulation from a set of data_fields for the VJP."""
 
@@ -888,13 +888,13 @@ def setup_adj(
         sim_data_new.plot_field("adjoint_fields", "Ez", "re", ax=ax3)
         plt.show()
 
-    if len(sims_adj) > max_num_adjoint_sims:
+    if len(sims_adj) > max_num_adjoint_per_fwd:
         msg = (
             f"Number of adjoint simulations ({len(sims_adj)}) exceeds the maximum allowed "
-            f"({max_num_adjoint_sims}) per forward simulation. This typically means that "
+            f"({max_num_adjoint_per_fwd}) per forward simulation. This typically means that "
             "there are many frequencies and monitors in the simulation that are being differentiated "
             "w.r.t. in the objective function. To proceed, please double-check the simulation "
-            "setup, increase the 'max_num_adjoint_sims' parameter in the run function, and re-run."
+            "setup, increase the 'max_num_adjoint_per_fwd' parameter in the run function, and re-run."
         )
         td.log.error(msg)
         raise ValueError(msg)
