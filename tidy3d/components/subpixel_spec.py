@@ -50,6 +50,12 @@ class PolarizedAveraging(AbstractSubpixelAveragingMethod):
         time-domain method", Optics express, 13(25), 10367-10381 (2005).
     """
 
+    enlarged_volume: bool = pd.Field(
+        False,
+        title="A larger volume for performing smoothing",
+        description="A larger volume for performing smoothing.",
+    )
+
 
 DielectricSubpixelType = Union[Staircasing, PolarizedAveraging]
 
