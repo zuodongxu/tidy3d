@@ -45,10 +45,16 @@ SIM_FILE_JSON = "simulation.json"
 GUI_SUPPORTED_TASK_TYPES = ["FDTD", "MODE_SOLVER", "HEAT"]
 
 # if a solver is in beta stage, cost is subject to change
-BETA_TASK_TYPES = ["HEAT", "EME"]
+BETA_TASK_TYPES = ["HEAT", "EME", "HEAT_CHARGE"]
 
 # map task_type to solver name for display
-SOLVER_NAME = {"FDTD": "FDTD", "HEAT": "HeatCharge", "MODE_SOLVER": "Mode", "EME": "EME"}
+SOLVER_NAME = {
+    "FDTD": "FDTD",
+    "HEAT": "Heat",
+    "HEAT_CHARGE": "HeatCharge",
+    "MODE_SOLVER": "Mode",
+    "EME": "EME",
+}
 
 
 def _get_url(task_id: str) -> str:
