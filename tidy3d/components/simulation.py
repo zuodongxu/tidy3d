@@ -1086,7 +1086,7 @@ class AbstractYeeGridSimulation(AbstractSimulation, ABC):
 
         # Add a simulation Box as the first structure
         structures = [Structure(geometry=self.geometry, medium=self.medium)]
-        structures += self.structures
+        structures += self.static_structures
 
         grid = self.grid_spec.make_grid(
             structures=structures,
