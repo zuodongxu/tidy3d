@@ -1094,13 +1094,18 @@ class AbstractYeeGridSimulation(AbstractSimulation, ABC):
             periodic=self._periodic,
             sources=self.sources,
             num_pml_layers=self.num_pml_layers,
-            cached_internal_snapping_points=self.internal_snapping_points,
-            cached_internal_override_structures=self.internal_override_structures,
+            internal_snapping_points=self.internal_snapping_points,
+            internal_override_structures=self.internal_override_structures,
         )
 
         # This would AutoGrid the in-plane directions of the 2D materials
         # return self._grid_corrections_2dmaterials(grid)
         return grid
+
+    @cached_property
+    def static_structures(self) -> list[Structure]:
+        """Structures in simulation with all autograd tracers removed."""
+        return [structure.to_static() for structure in self.structures]
 
     @cached_property
     def num_cells(self) -> int:
@@ -3825,11 +3830,6 @@ class Simulation(AbstractYeeGridSimulation):
                 )
 
     @cached_property
-    def static_structures(self) -> list[Structure]:
-        """Structures in simulation with all autograd tracers removed."""
-        return [structure.to_static() for structure in self.structures]
-
-    @cached_property
     def monitors_data_size(self) -> Dict[str, float]:
         """Dictionary mapping monitor names to their estimated storage size in bytes."""
         data_size = {}
@@ -4600,8 +4600,8 @@ class Simulation(AbstractYeeGridSimulation):
             symmetry=self.symmetry,
             sources=self.sources,
             num_pml_layers=self.num_pml_layers,
-            cached_internal_snapping_points=self.internal_snapping_points,
-            cached_internal_override_structures=self.internal_override_structures,
+            internal_snapping_points=self.internal_snapping_points,
+            internal_override_structures=self.internal_override_structures,
         )
 
         # Handle 2D materials if ``AutoGrid`` is used for in-plane directions
