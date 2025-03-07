@@ -3,13 +3,13 @@
 import os
 import pathlib
 import tempfile
-import urllib
+# import urllib
 from datetime import datetime
 from enum import Enum
 from typing import Callable, Mapping
 
-import boto3
-from boto3.s3.transfer import TransferConfig
+# import boto3
+# from boto3.s3.transfer import TransferConfig
 from pydantic.v1 import BaseModel, Field
 from rich.progress import (
     BarColumn,
@@ -24,7 +24,7 @@ from .core_config import get_logger_console
 from .environment import Env
 from .exceptions import WebError
 from .file_util import extract_gzip_file
-from .http_util import http
+# from .http_util import http
 
 
 class _UserCredential(BaseModel):
@@ -54,8 +54,10 @@ class _S3STSToken(BaseModel):
         r = urllib.parse.urlparse(self.cloud_path)
         return r.path[1:]
 
-    def get_client(self) -> boto3.client:
+    def get_client(self):
         """Get the boto client for this token."""
+
+        raise NotImplementedError("get_client is not implemented")
 
         return boto3.client(
             "s3",
@@ -173,8 +175,14 @@ def _get_progress(action: _S3Action):
     )
 
 
-_s3_config = TransferConfig()
+# _s3_config = TransferConfig(
+#     multipart_threshold=1024 * 25,
+#     max_concurrency=50,
+#     multipart_chunksize=1024 * 25,
+#     use_threads=True,
+# )
 
+_s3_config = {}
 _s3_sts_tokens: [str, _S3STSToken] = {}
 
 
@@ -197,15 +205,18 @@ def get_s3_sts_token(
     _S3STSToken
         The S3 STS token.
     """
-    cache_key = f"{resource_id}:{file_name}"
-    if cache_key not in _s3_sts_tokens or _s3_sts_tokens[cache_key].is_expired():
-        method = f"tidy3d/py/tasks/{resource_id}/file?filename={file_name}"
-        if extra_arguments is not None:
-            method += "&" + "&".join(f"{k}={v}" for k, v in extra_arguments.items())
-        resp = http.get(method)
-        token = _S3STSToken.parse_obj(resp)
-        _s3_sts_tokens[cache_key] = token
-    return _s3_sts_tokens[cache_key]
+
+    # cache_key = f"{resource_id}:{file_name}"
+    # if cache_key not in _s3_sts_tokens or _s3_sts_tokens[cache_key].is_expired():
+    #     method = f"tidy3d/py/tasks/{resource_id}/file?filename={file_name}"
+    #     if extra_arguments is not None:
+    #         method += "&" + "&".join(f"{k}={v}" for k, v in extra_arguments.items())
+    #     resp = http.get(method)
+    #     token = _S3STSToken.parse_obj(resp)
+    #     _s3_sts_tokens[cache_key] = token
+    # return _s3_sts_tokens[cache_key]
+
+    raise NotImplementedError("get_s3_sts_token is not implemented")
 
 
 def upload_file(
@@ -233,6 +244,8 @@ def upload_file(
     extra_arguments : Mapping[str, str]
         Additional arguments used to specify the upload bucket.
     """
+
+    raise NotImplementedError("upload_file is not implemented")
 
     token = get_s3_sts_token(resource_id, remote_filename, extra_arguments)
 
@@ -298,6 +311,8 @@ def download_file(
     progress_callback : Callable[[float], None] = None
         User-supplied callback function with ``bytes_in_chunk`` as argument.
     """
+
+    raise NotImplementedError("download_file is not implemented")
 
     token = get_s3_sts_token(resource_id, remote_filename)
     client = token.get_client()

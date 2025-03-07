@@ -179,7 +179,9 @@ class AbstractComponentModeler(ABC, Tidy3dBaseModel):
     @cached_property
     def batch_data(self) -> BatchData:
         """The :class:`.BatchData` associated with the simulations run for this component modeler."""
-        return self.batch.run(path_dir=self.path_dir)
+        batch_data = BatchData.load(path_dir=self.path_dir)
+        return batch_data
+        # return self.batch.run(path_dir=self.path_dir)
 
     def get_path_dir(self, path_dir: str) -> None:
         """Check whether the supplied 'path_dir' matches the internal field value."""

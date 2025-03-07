@@ -6,10 +6,10 @@ from functools import wraps
 from os.path import expanduser
 from typing import Dict
 
-import requests
-import toml
-from requests.adapters import HTTPAdapter
-from urllib3.util.ssl_ import create_urllib3_context
+# import requests
+# import toml
+# from requests.adapters import HTTPAdapter
+# from urllib3.util.ssl_ import create_urllib3_context
 
 from . import core_config
 from .constants import (
@@ -59,6 +59,8 @@ def get_user_agent():
 def api_key() -> None:
     """Get the api key for the current environment."""
 
+    raise NotImplementedError("api_key is not implemented")
+
     if os.environ.get(SIMCLOUD_APIKEY):
         return os.environ.get(SIMCLOUD_APIKEY)
     if os.path.exists(CONFIG_FILE):
@@ -69,7 +71,7 @@ def api_key() -> None:
     return None
 
 
-def api_key_auth(request: requests.request) -> requests.request:
+def api_key_auth(request):
     """Save the authentication info in a request.
 
     Parameters
@@ -82,6 +84,9 @@ def api_key_auth(request: requests.request) -> requests.request:
     requests.request
         The request with authentication set.
     """
+
+    raise NotImplementedError("api_key_auth is not implemented")
+
     key = api_key()
     version = get_version()
     if not key:
@@ -150,18 +155,25 @@ def http_interceptor(func):
     return wrapper
 
 
-class TLSAdapter(HTTPAdapter):
+# class TLSAdapter(HTTPAdapter):
+#     def init_poolmanager(self, *args, **kwargs):
+#         context = create_urllib3_context(ssl_version=Env.current.ssl_version)
+#         kwargs["ssl_context"] = context
+#         return super().init_poolmanager(*args, **kwargs)
+
+class TLSAdapter():
     def init_poolmanager(self, *args, **kwargs):
-        context = create_urllib3_context(ssl_version=Env.current.ssl_version)
-        kwargs["ssl_context"] = context
-        return super().init_poolmanager(*args, **kwargs)
+        raise NotImplementedError("TLSAdapter is not implemented")
 
 
 class HttpSessionManager:
     """Http util class."""
 
-    def __init__(self, session: requests.Session):
+    def __init__(self, session):
         """Initialize the session."""
+
+        raise NotImplementedError("HttpSessionManager is not implemented")
+
         ssl_version = Env.current.ssl_version
         if ssl_version:
             session.mount("https://", TLSAdapter())
@@ -202,4 +214,4 @@ class HttpSessionManager:
         return self.session.delete(Env.current.get_real_url(path), auth=api_key_auth)
 
 
-http = HttpSessionManager(requests.Session())
+http = {}
