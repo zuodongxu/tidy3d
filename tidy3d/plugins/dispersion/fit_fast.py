@@ -7,9 +7,13 @@ from typing import Tuple
 import numpy as np
 from pydantic.v1 import NonNegativeFloat, PositiveInt
 
-from ...components.dispersion_fitter import AdvancedFastFitterParam, fit
+from ...components.dispersion_fitter import (
+    AdvancedFastFitterParam,
+    constant_loss_tangent_model,
+    fit,
+)
 from ...components.medium import PoleResidue
-from ...constants import C_0, HBAR
+from ...constants import HBAR
 from .fit import DispersionFitter
 
 # numerical tolerance for pole relocation for fast fitter
@@ -144,15 +148,18 @@ class FastDispersionFitter(DispersionFitter):
         :class:`.PoleResidue
             Best results of multiple fits.
         """
-        if number_sampling_frequency < 2:
-            frequencies = np.array([np.mean(frequency_range)])
-        else:
-            frequencies = np.linspace(
-                frequency_range[0], frequency_range[1], number_sampling_frequency
-            )
-        wvl_um = C_0 / frequencies
-        eps_real_array = np.ones_like(frequencies) * eps_real
-        loss_tangent_array = np.ones_like(frequencies) * loss_tangent
-        fitter = cls.from_loss_tangent(wvl_um, eps_real_array, loss_tangent_array)
-        material, _ = fitter.fit(max_num_poles=max_num_poles, tolerance_rms=tolerance_rms)
-        return material
+        params, _ = constant_loss_tangent_model(
+            eps_real=eps_real,
+            loss_tangent=loss_tangent,
+            frequency_range=frequency_range,
+            max_num_poles=max_num_poles,
+            number_sampling_frequency=number_sampling_frequency,
+            tolerance_rms=tolerance_rms,
+            scale_factor=HBAR,
+        )
+
+        eps_inf, poles, residues = params
+
+        medium = PoleResidue(eps_inf=eps_inf, poles=list(zip(poles, residues)))
+
+        return medium
