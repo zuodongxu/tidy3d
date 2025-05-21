@@ -32,11 +32,11 @@ from .api.webapi import (
     # run, # NOTE: use autograd one now (see below)
     upload,
 )
-from .cli import tidy3d_cli
-from .cli.app import configure_fn as configure
-from .cli.migrate import migrate
+# from .cli import tidy3d_cli
+# from .cli.app import configure_fn as configure
+# from .cli.migrate import migrate
 
-migrate()
+# migrate()
 
 __all__ = [
     "run",
@@ -58,8 +58,8 @@ __all__ = [
     "Job",
     "Batch",
     "BatchData",
-    "tidy3d_cli",
-    "configure",
+    # "tidy3d_cli",
+    # "configure",
     "run_async",
     "test",
     "account",
